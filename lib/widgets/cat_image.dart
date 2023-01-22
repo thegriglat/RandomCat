@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class CatImageWidget extends StatelessWidget {
   final String url;
@@ -7,24 +8,11 @@ class CatImageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.network(
-      url,
-      fit: BoxFit.fill,
-      loadingBuilder: (BuildContext context,
-          Widget child,
-          ImageChunkEvent? loadingProgress) {
-        if (loadingProgress == null) return child;
-        return CircularProgressIndicator(
-            value: loadingProgress
-                .expectedTotalBytes !=
-                null
-                ? loadingProgress
-                .cumulativeBytesLoaded /
-                loadingProgress
-                    .expectedTotalBytes!
-                : null,
-          );
-      },
+    return CachedNetworkImage(
+      imageUrl: url,
+      progressIndicatorBuilder: (context, url, downloadProgress) =>
+          CircularProgressIndicator(value: downloadProgress.progress),
+      errorWidget: (context, url, error) => const Text("Error!"),
     );
   }
 }
