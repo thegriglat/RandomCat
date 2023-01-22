@@ -18,31 +18,42 @@ class ImageResponse {
   }
 }
 
-Future<ImageResponse> fetchImage() async {
-  final response = await http.get(Uri.parse('https://aws.random.cat/meow'));
-  if (response.statusCode == 200) {
-    return ImageResponse.fromJson(jsonDecode(response.body));
-  } else {
-    throw Exception("Failed to load cat");
-  }
-}
-
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
-
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  // late Future<ImageResponse> catImage;
+  late Future<ImageResponse> catImage;
+  late bool apiLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    updateState();
+  }
+
+  void updateState() {
+    catImage = fetchImage();
+  }
+
+  Future<ImageResponse> fetchImage() async {
+    apiLoaded = false;
+    final response = await http.get(Uri.parse('https://aws.random.cat/meow'));
+    if (response.statusCode == 200) {
+      apiLoaded = true;
+      return ImageResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception("Failed to load cat");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    var catImage = fetchImage();
     return MaterialApp(
         title: 'Random cat',
         theme: flutterNesTheme(),
@@ -59,6 +70,9 @@ class _MyAppState extends State<MyApp> {
                           child: FutureBuilder<ImageResponse>(
                               future: catImage,
                               builder: (context, snapshot) {
+                                if (!apiLoaded) {
+                                  return const Text("Cat almost ready...");
+                                }
                                 if (snapshot.hasData) {
                                   return Image.network(
                                     snapshot.data!.file,
@@ -92,9 +106,7 @@ class _MyAppState extends State<MyApp> {
                 FloatingActionButtonLocation.centerFloat,
             floatingActionButton: NesButton(
               type: NesButtonType.success,
-              onPressed: () => setState(() {
-                catImage = fetchImage();
-              }),
+              onPressed: () => setState(updateState),
               child: const Text("I want more!"),
             )));
   }
