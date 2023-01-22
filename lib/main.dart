@@ -91,7 +91,7 @@ class _MyAppState extends State<MyApp> {
             floatingActionButtonLocation:
                 FloatingActionButtonLocation.centerFloat,
             floatingActionButton: NesButton(
-              type: NesButtonType.normal,
+              type: NesButtonType.success,
               onPressed: () => setState(() {
                 catImage = fetchImage();
               }),
