@@ -34,17 +34,10 @@ class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   State<MyApp> createState() => _MyAppState();
-
 }
 
 class _MyAppState extends State<MyApp> {
   // late Future<ImageResponse> catImage;
-
-  @override
-  void initState() {
-    super.initState();
-    // catImage = fetchImage();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,15 +47,28 @@ class _MyAppState extends State<MyApp> {
         theme:flutterNesTheme(),
         home:Scaffold(
           appBar: AppBar(
-            title: const Text('Random cat viewer'),
+            title: const Text('Cat explorer'),
           ),
           body: Column(
           children: [ NesContainer(child: FutureBuilder<ImageResponse>(
               future: catImage,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return Image(
-                    image: NetworkImage(snapshot.data!.file),
+                  return Image.network(
+                    snapshot.data!.file,
+                    fit: BoxFit.fill,
+                    loadingBuilder: (BuildContext context, Widget child,
+                        ImageChunkEvent? loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
                   );
                 } else if (snapshot.hasError) {
                   return Text('${snapshot.error}');
@@ -71,22 +77,16 @@ class _MyAppState extends State<MyApp> {
                 return const CircularProgressIndicator();
               }
           )),
-        Divider(),
-        NesButton(
-            type: NesButtonType.normal,
-            onPressed: () => setState(() {
-              catImage = fetchImage();
-            }),
-            child: const Text("I want more!"),
-          )
-          ])
-          // floatingActionButton: NesButton(
-          //   type: NesButtonType.normal,
-          //   onPressed: () => setState(() {
-          //     catImage = fetchImage();
-          //   }),
-          //   child: const Icon(Icons.radar),
-          // ),
+        Divider()
+      ])
+         ,floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+            floatingActionButton:  NesButton(
+    type: NesButtonType.normal,
+        onPressed: () => setState(() {
+      catImage = fetchImage();
+    }),
+    child: const Text("I want more!"),
+    )
         )
 
 
